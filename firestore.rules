@@ -1,0 +1,155 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helper functions ────────────────────────────────────────────────────
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function isCustomer() {
+      return isSignedIn() && getUserRole() == 'customer';
+    }
+
+    function isBusiness() {
+      return isSignedIn() && getUserRole() == 'business';
+    }
+
+    function isAdmin() {
+      return isSignedIn() && getUserRole() == 'admin';
+    }
+
+    function isBusinessOwner(businessId) {
+      return isSignedIn() && get(/databases/$(database)/documents/businesses/$(businessId)).data.ownerId == request.auth.uid;
+    }
+
+    // ── Users ───────────────────────────────────────────────────────────────
+    match /users/{userId} {
+      // Users can read/write only their own profile
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ── Businesses ──────────────────────────────────────────────────────────
+    match /businesses/{businessId} {
+      // Anyone signed in can read businesses (needed for map/search)
+      allow read: if isSignedIn();
+      // Only business owner or admin can write
+      allow create: if isBusiness() || isAdmin();
+      allow update: if isBusinessOwner(businessId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ── Bookings ────────────────────────────────────────────────────────────
+    match /bookings/{bookingId} {
+      // Customer can read their own bookings; business can read bookings for their business
+      allow read: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        isBusinessOwner(resource.data.businessId) ||
+        isAdmin()
+      );
+      // Customers can create bookings
+      allow create: if isCustomer() && request.resource.data.userId == request.auth.uid;
+      // Owner or business can update (e.g. status change)
+      allow update: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        isBusinessOwner(resource.data.businessId) ||
+        isAdmin()
+      );
+      // Only admin can delete bookings
+      allow delete: if isAdmin();
+    }
+
+    // ── Queue ───────────────────────────────────────────────────────────────
+    match /queue/{queueId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        isBusinessOwner(resource.data.businessId) ||
+        isAdmin()
+      );
+      allow delete: if isSignedIn() && (
+        isBusinessOwner(resource.data.businessId) || isAdmin()
+      );
+    }
+
+    // ── Services (business services/pricing) ────────────────────────────────
+    match /services/{serviceId} {
+      allow read: if isSignedIn();
+      allow write: if isBusinessOwner(resource.data.businessId) || isAdmin();
+    }
+
+    // ── Staff ────────────────────────────────────────────────────────────────
+    match /staff/{staffId} {
+      allow read: if isSignedIn() && (
+        isBusinessOwner(resource.data.businessId) || isAdmin()
+      );
+      allow write: if isBusinessOwner(resource.data.businessId) || isAdmin();
+    }
+
+    // ── Payments ────────────────────────────────────────────────────────────
+    match /payments/{paymentId} {
+      allow read: if isOwner(resource.data.userId) || isAdmin();
+      // Only backend (via service account) should write payments; clients can create their own
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    // ── Transactions (wallet) ────────────────────────────────────────────────
+    match /transactions/{txId} {
+      allow read: if isOwner(resource.data.userId) || isAdmin();
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    // ── Notifications ────────────────────────────────────────────────────────
+    match /notifications/{notifId} {
+      allow read: if isSignedIn()
+        && resource.data.get('userId', '') == request.auth.uid
+        || isAdmin();
+
+      allow update, delete: if isSignedIn()
+        && resource.data.get('userId', '') == request.auth.uid
+        || isAdmin();
+
+      allow create: if isSignedIn()
+        && request.resource.data.get('userId', '') is string
+        && request.resource.data.get('userId', '') != ''
+        && request.resource.data.keys().hasAll(['userId', 'title', 'body', 'message', 'type', 'isRead', 'createdAt']);
+    }
+
+    // ── Reviews ──────────────────────────────────────────────────────────────
+    match /reviews/{reviewId} {
+      // Anyone signed in can read reviews
+      allow read: if isSignedIn();
+      // Customers can create their own review
+      allow create: if isCustomer() && request.resource.data.userId == request.auth.uid;
+      // Reviewer can update/delete their own review
+      allow update, delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+
+    // ── Analytics (business-level) ───────────────────────────────────────────
+    match /analytics/{docId} {
+      allow read: if isBusinessOwner(resource.data.businessId) || isAdmin();
+      allow write: if isAdmin(); // Written by Cloud Functions only
+    }
+
+    // ── App Config (read-only for clients) ────────────────────────────────────
+    match /config/{docId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+  }
+}

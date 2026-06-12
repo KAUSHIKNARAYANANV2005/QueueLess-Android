@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QueueLess — Skip the Wait, Not the Visit</title>
+  <meta name="description" content="QueueLess lets you book appointments, join queues remotely, and get real-time updates — for clinics, salons, banks, and more." />
+  <meta property="og:title" content="QueueLess — Smart Queue Management" />
+  <meta property="og:description" content="No more waiting in lines. Book your spot from anywhere." />
+  <meta property="og:type" content="website" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ── NAV ──────────────────────────────────────────────────────────────── -->
+  <nav class="nav" id="navbar">
+    <div class="nav-inner">
+      <a href="#" class="nav-logo">
+        <div class="logo-icon">Q</div>
+        <span>QueueLess</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="#business">For Business</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a href="#" class="btn-ghost">Sign In</a>
+        <a href="#download" class="btn-primary">Get the App</a>
+      </div>
+      <button class="hamburger" id="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <div class="mobile-menu" id="mobileMenu">
+      <a href="#features">Features</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="#business">For Business</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#download" class="btn-primary" style="text-align:center">Get the App</a>
+    </div>
+  </nav>
+
+  <!-- ── HERO ─────────────────────────────────────────────────────────────── -->
+  <section class="hero" id="home">
+    <div class="hero-bg">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="blob blob-3"></div>
+      <div class="grid-overlay"></div>
+    </div>
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="badge-dot"></span>
+        Now live in 50+ cities across India
+      </div>
+      <h1 class="hero-title">
+        Skip the Wait,<br/>
+        <span class="gradient-text">Not the Visit.</span>
+      </h1>
+      <p class="hero-subtitle">
+        Book appointments, join queues remotely, and get real-time updates —
+        for clinics, salons, banks, government offices, and more.
+      </p>
+      <div class="hero-actions">
+        <a href="#download" class="btn-primary btn-lg">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.7 9.05 7.4c1.42.07 2.4.77 3.24.83 1.24-.19 2.42-.91 3.75-.84 1.67.09 2.92.79 3.74 2-.5.28-2.96 1.44-2.93 4.35.04 3.23 2.83 4.28 3.2 4.43-.22.66-.54 1.4-1 2.1zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+          Download for iOS
+        </a>
+        <a href="#download" class="btn-outline btn-lg">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.523 15.341L5.33 2.358C5.22 2.244 5.075 2.187 4.926 2.187c-.149 0-.294.057-.404.171L1.358 5.488C1.13 5.723 1.139 6.1 1.378 6.323l4.287 4.032-4.287 4.033c-.239.224-.248.6-.02.835l3.164 3.13c.11.109.255.166.404.166.149 0 .294-.057.404-.166l4.287-4.033 4.288 4.033c.224.21.572.2.785-.025l3.163-3.13c.228-.235.219-.611-.02-.836l-4.287-4.021zm-5.086-5.086l-4.288-4.033 2.358-2.331 4.288 4.033-2.358 2.331zm5.086 5.086l-2.358 2.331-4.288-4.033 2.358-2.331 4.288 4.033z"/></svg>
+          Download for Android
+        </a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-num">2M+</span>
+          <span class="stat-label">Appointments Booked</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-num">15K+</span>
+          <span class="stat-label">Business Partners</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-num">4.9★</span>
+          <span class="stat-label">App Store Rating</span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="phone-mockup">
+        <div class="phone-screen">
+          <div class="app-header">
+            <div class="app-avatar"></div>
+            <div>
+              <div class="app-greeting">Good morning, Kaushik 👋</div>
+              <div class="app-sub">Find your next appointment</div>
+            </div>
+          </div>
+          <div class="app-search">🔍 Search clinics, salons...</div>
+          <div class="queue-card active">
+            <div class="queue-card-top">
+              <span class="queue-badge">LIVE</span>
+              <span class="queue-time">~12 min</span>
+            </div>
+            <div class="queue-title">Dr. Sharma Clinic</div>
+            <div class="queue-token">Token #A-07</div>
+            <div class="queue-progress">
+              <div class="queue-bar" style="width:65%"></div>
+            </div>
+            <div class="queue-pos">3 people ahead of you</div>
+          </div>
+          <div class="nearby-label">Nearby</div>
+          <div class="biz-card"><div class="biz-icon">💇</div><div><div class="biz-name">Lakme Salon</div><div class="biz-meta">0.3 km · 1 in queue</div></div><div class="biz-open">Open</div></div>
+          <div class="biz-card"><div class="biz-icon">🏦</div><div><div class="biz-name">SBI Bank</div><div class="biz-meta">0.8 km · 12 in queue</div></div><div class="biz-open busy">Busy</div></div>
+        </div>
+        <div class="phone-notch"></div>
+      </div>
+      <div class="floating-card card-1">
+        <div class="fc-icon">✅</div>
+        <div>
+          <div class="fc-title">Booking Confirmed!</div>
+          <div class="fc-sub">Apollo Diagnostics · 10:30 AM</div>
+        </div>
+      </div>
+      <div class="floating-card card-2">
+        <div class="fc-icon">🔔</div>
+        <div>
+          <div class="fc-title">You're next!</div>
+          <div class="fc-sub">Head to counter 3 now</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── TRUSTED BY ────────────────────────────────────────────────────────── -->
+  <section class="trusted">
+    <p class="trusted-label">Trusted by leading businesses across India</p>
+    <div class="trusted-logos">
+      <div class="logo-pill">🏥 Apollo Hospitals</div>
+      <div class="logo-pill">💇 Lakme Salons</div>
+      <div class="logo-pill">🏦 State Bank of India</div>
+      <div class="logo-pill">🧘 Tattva Spa</div>
+      <div class="logo-pill">🏛️ BBMP Services</div>
+      <div class="logo-pill">🔬 Dr. Lal PathLabs</div>
+    </div>
+  </section>
+
+  <!-- ── FEATURES ──────────────────────────────────────────────────────────── -->
+  <section class="features" id="features">
+    <div class="section-header">
+      <div class="section-badge">Features</div>
+      <h2>Everything you need to <span class="gradient-text">skip the queue</span></h2>
+      <p>Powerful tools for customers and businesses, built for the Indian market.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card card-purple">
+        <div class="feature-icon">📍</div>
+        <h3>Live Queue Tracking</h3>
+        <p>See exactly how many people are ahead of you — in real time, from anywhere.</p>
+      </div>
+      <div class="feature-card card-teal">
+        <div class="feature-icon">📅</div>
+        <h3>Smart Booking</h3>
+        <p>Book appointments with one tap. AI suggests the best time slot based on historical wait data.</p>
+      </div>
+      <div class="feature-card card-coral">
+        <div class="feature-icon">🔔</div>
+        <h3>Smart Notifications</h3>
+        <p>Get notified when you're 2 people away. No more refreshing or calling the front desk.</p>
+      </div>
+      <div class="feature-card card-amber">
+        <div class="feature-icon">🤖</div>
+        <h3>QueueBot AI</h3>
+        <p>Ask our AI assistant to book, cancel, or check queue status — just like texting a friend.</p>
+      </div>
+      <div class="feature-card card-blue">
+        <div class="feature-icon">💳</div>
+        <h3>Secure Payments</h3>
+        <p>Pay online via UPI, card, or wallet. Powered by Razorpay with 256-bit SSL encryption.</p>
+      </div>
+      <div class="feature-card card-green">
+        <div class="feature-icon">📊</div>
+        <h3>Business Analytics</h3>
+        <p>Businesses get real-time dashboards — revenue, satisfaction scores, and peak hour insights.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── HOW IT WORKS ──────────────────────────────────────────────────────── -->
+  <section class="how-it-works" id="how-it-works">
+    <div class="section-header">
+      <div class="section-badge">How It Works</div>
+      <h2>Up and running in <span class="gradient-text">3 simple steps</span></h2>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-content">
+          <h3>Find a Business</h3>
+          <p>Search for clinics, salons, banks, or government offices near you. See live queue counts and wait times before you even leave home.</p>
+        </div>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-content">
+          <h3>Book Your Spot</h3>
+          <p>Pick a service, choose a time slot, and get a digital token instantly. AI recommends the least busy time for your visit.</p>
+        </div>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-content">
+          <h3>Show Up on Time</h3>
+          <p>Arrive exactly when it's your turn. We notify you when you're next — so you can wait from home, office, or a cafe.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FOR BUSINESS ──────────────────────────────────────────────────────── -->
+  <section class="for-business" id="business">
+    <div class="business-inner">
+      <div class="business-content">
+        <div class="section-badge">For Businesses</div>
+        <h2>Delight your customers.<br/><span class="gradient-text">Grow your revenue.</span></h2>
+        <p>QueueLess gives your business a complete queue management system — without buying expensive hardware.</p>
+        <ul class="business-features">
+          <li><span class="check">✓</span> Live queue dashboard on any device</li>
+          <li><span class="check">✓</span> Automated SMS & push notifications</li>
+          <li><span class="check">✓</span> Staff and service management</li>
+          <li><span class="check">✓</span> Revenue analytics & reports</li>
+          <li><span class="check">✓</span> Customer reviews & ratings</li>
+          <li><span class="check">✓</span> Online payment collection</li>
+        </ul>
+        <a href="#pricing" class="btn-primary">View Business Plans →</a>
+      </div>
+      <div class="business-visual">
+        <div class="dashboard-mockup">
+          <div class="dash-header">
+            <span class="dash-title">Business Dashboard</span>
+            <span class="dash-live">● LIVE</span>
+          </div>
+          <div class="dash-stats">
+            <div class="dash-stat"><div class="ds-num">24</div><div class="ds-label">In Queue</div></div>
+            <div class="dash-stat"><div class="ds-num">₹45K</div><div class="ds-label">Today's Revenue</div></div>
+            <div class="dash-stat"><div class="ds-num">4.8★</div><div class="ds-label">Rating</div></div>
+          </div>
+          <div class="dash-queue-label">Current Queue</div>
+          <div class="dash-token serving">Now Serving: A-12 · Dr. Anita</div>
+          <div class="dash-token waiting">A-13 · Rahul Kumar · 8 min</div>
+          <div class="dash-token waiting">A-14 · Priya Sharma · 16 min</div>
+          <div class="dash-actions">
+            <button class="dash-btn serve">Serve Next</button>
+            <button class="dash-btn skip">Skip</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PRICING ───────────────────────────────────────────────────────────── -->
+  <section class="pricing" id="pricing">
+    <div class="section-header">
+      <div class="section-badge">Pricing</div>
+      <h2>Simple, transparent <span class="gradient-text">pricing</span></h2>
+      <p>No hidden fees. Cancel anytime.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="plan-name">Starter</div>
+        <div class="plan-price">Free</div>
+        <div class="plan-sub">Forever free for small businesses</div>
+        <ul class="plan-features">
+          <li>Up to 50 bookings/month</li>
+          <li>Basic queue management</li>
+          <li>1 staff member</li>
+          <li>Email support</li>
+        </ul>
+        <a href="#" class="btn-outline" style="display:block;text-align:center">Get Started</a>
+      </div>
+      <div class="price-card featured">
+        <div class="plan-badge">Most Popular</div>
+        <div class="plan-name">Pro</div>
+        <div class="plan-price">₹999<span>/mo</span></div>
+        <div class="plan-sub">For growing businesses</div>
+        <ul class="plan-features">
+          <li>Unlimited bookings</li>
+          <li>Live queue management</li>
+          <li>Up to 10 staff members</li>
+          <li>Analytics dashboard</li>
+          <li>Online payments</li>
+          <li>Priority support</li>
+        </ul>
+        <a href="#" class="btn-primary" style="display:block;text-align:center">Start Free Trial</a>
+      </div>
+      <div class="price-card">
+        <div class="plan-name">Enterprise</div>
+        <div class="plan-price">Custom</div>
+        <div class="plan-sub">For chains and government</div>
+        <ul class="plan-features">
+          <li>Multi-branch management</li>
+          <li>Dedicated account manager</li>
+          <li>API access</li>
+          <li>Custom integrations</li>
+          <li>SLA guarantee</li>
+        </ul>
+        <a href="#" class="btn-outline" style="display:block;text-align:center">Contact Sales</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── DOWNLOAD ──────────────────────────────────────────────────────────── -->
+  <section class="download" id="download">
+    <div class="download-inner">
+      <h2>Ready to skip the queue?</h2>
+      <p>Join 2 million+ Indians who've taken back their time.</p>
+      <div class="download-btns">
+        <a href="#" class="store-btn">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.7 9.05 7.4c1.42.07 2.4.77 3.24.83 1.24-.19 2.42-.91 3.75-.84 1.67.09 2.92.79 3.74 2-.5.28-2.96 1.44-2.93 4.35.04 3.23 2.83 4.28 3.2 4.43-.22.66-.54 1.4-1 2.1zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+          <div><div class="store-small">Download on the</div><div class="store-big">App Store</div></div>
+        </a>
+        <a href="#" class="store-btn">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M3.18 23.76a1.5 1.5 0 01-.76-1.32V1.56A1.5 1.5 0 013.18.24l.09-.05 12.49 11.62v.26L3.27 23.81z"/><path d="M19.83 15.69l-3.07-2.86v-.26l3.07-2.86.07.04 3.64 2.07c1.04.59 1.04 1.56 0 2.15l-3.64 2.07-.07.05z"/><path d="M19.9 15.64L16.76 12.7 3.18 23.76c.34.32.87.36 1.27.1l15.45-8.22z"/><path d="M3.18.24L16.76 11.3 19.9 8.36 4.45.14C4.05-.12 3.52-.08 3.18.24z"/></svg>
+          <div><div class="store-small">Get it on</div><div class="store-big">Google Play</div></div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ────────────────────────────────────────────────────────────── -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div class="nav-logo"><div class="logo-icon">Q</div><span>QueueLess</span></div>
+        <p>Skip the wait, not the visit.</p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <div class="fc-title">Product</div>
+          <a href="#">Features</a>
+          <a href="#">Pricing</a>
+          <a href="#">For Business</a>
+          <a href="#">Download</a>
+        </div>
+        <div class="footer-col">
+          <div class="fc-title">Company</div>
+          <a href="#">About</a>
+          <a href="#">Blog</a>
+          <a href="#">Careers</a>
+          <a href="#">Press</a>
+        </div>
+        <div class="footer-col">
+          <div class="fc-title">Support</div>
+          <a href="#">Help Center</a>
+          <a href="#">Contact</a>
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 QueueLess Technologies Pvt. Ltd. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
