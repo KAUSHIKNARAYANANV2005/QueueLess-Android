@@ -42,6 +42,7 @@ class DefaultFirebaseOptions {
     appId: '1:378813036718:android:1305e292ef9f959196d53f',
     messagingSenderId: '378813036718',
     projectId: 'queueless-d131e',
+    authDomain: 'queueless-d131e.firebaseapp.com',
     storageBucket: 'queueless-d131e.firebasestorage.app',
   );
 
@@ -50,6 +51,7 @@ class DefaultFirebaseOptions {
     appId: '1:378813036718:ios:queueless_ios_96d53f',
     messagingSenderId: '378813036718',
     projectId: 'queueless-d131e',
+    authDomain: 'queueless-d131e.firebaseapp.com',
     storageBucket: 'queueless-d131e.firebasestorage.app',
     iosBundleId: 'com.queueless.queueless',
   );

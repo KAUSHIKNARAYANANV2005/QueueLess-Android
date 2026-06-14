@@ -66,7 +66,8 @@ class _LoginScreenState extends State<LoginScreen> {
         _emailCtrl.text.trim(), _passCtrl.text);
       if (mounted) await _navigateByRole();
     } catch (e) {
-      setState(() => _error = 'Invalid email or password. Please try again.');
+      print('Login error: $e');
+      setState(() => _error = e.toString());
     } finally {
       if (mounted) setState(() => _loading = false);
     }

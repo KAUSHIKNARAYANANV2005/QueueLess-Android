@@ -126,6 +126,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
       String role) {
     final isSelected = _selectedRole == role;
     return GestureDetector(
+      key: Key('role_card_$role'),
       onTap: () => setState(() => _selectedRole = role),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 250),

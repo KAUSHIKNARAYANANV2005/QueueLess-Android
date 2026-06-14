@@ -36,6 +36,7 @@ class FirebaseService {
     try {
       return await _auth.signInWithEmailAndPassword(email: email, password: password);
     } on FirebaseAuthException catch (e) {
+      print('Firebase Auth Error: [${e.code}] ${e.message}');
       throw _authError(e.code);
     }
   }
