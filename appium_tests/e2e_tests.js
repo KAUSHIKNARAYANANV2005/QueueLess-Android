@@ -4,7 +4,7 @@ const path = require('path');
 // Capabilities for Appium automation targeting the connected physical device (V2037 / 9622368137000JB)
 const caps = {
   platformName: 'Android',
-  'appium:deviceName': '9622368137000JB', // Physical V2037 device
+  'appium:deviceName': process.env.DEVICE_NAME || '9622368137000JB', // Emulated or Physical device
   'appium:automationName': 'UiAutomator2',
   'appium:app': path.join(__dirname, '../build/app/outputs/flutter-apk/app-debug.apk'),
   'appium:appPackage': 'com.queueless.queueless',

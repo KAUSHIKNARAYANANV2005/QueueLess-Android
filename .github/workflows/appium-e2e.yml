@@ -1,0 +1,64 @@
+name: Appium E2E Tests
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.0' # Match standard supported versions
+          channel: 'stable'
+
+      - name: Build Flutter APK
+        run: flutter build apk --debug
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Appium & Dependencies
+        run: |
+          cd appium_tests
+          npm install
+          npm i -g appium
+          appium driver install uiautomator2
+
+      - name: Start Appium Server
+        run: |
+          appium &
+        env:
+          APPIUM_PORT: 4723
+
+      - name: Run E2E Tests on Android Emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          target: default
+          arch: x86_64
+          profile: Nexus 6
+          script: |
+            cd appium_tests
+            export DEVICE_NAME=emulator-5554
+            npm test
+
+      - name: Upload Test Report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: appium-test-report
+          path: appium_tests/queueless_test_report.xlsx
