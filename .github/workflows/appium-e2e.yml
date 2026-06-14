@@ -40,7 +40,6 @@ jobs:
           cd appium_tests
           npm install
           npm i -g appium
-          appium driver install uiautomator2
 
       - name: Start Appium Server
         run: |
