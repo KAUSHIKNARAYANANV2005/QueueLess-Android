@@ -20,7 +20,6 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.0' # Match standard supported versions
           channel: 'stable'
 
       - name: Build Flutter APK
