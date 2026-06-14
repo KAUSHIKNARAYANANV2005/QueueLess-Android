@@ -54,10 +54,7 @@ jobs:
           target: default
           arch: x86_64
           profile: Nexus 6
-          script: |
-            cd appium_tests
-            export DEVICE_NAME=emulator-5554
-            npm test
+          script: cd appium_tests && export DEVICE_NAME=emulator-5554 && npm test
 
       - name: Upload Test Report
         if: always()
