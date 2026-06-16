@@ -1,6 +1,6 @@
 # QueueLess 🚀
 
-> **Skip the Wait, Not the Visit.***
+> **Skip the Wait, Not the Visit.******
 > Smart queue management for clinics, salons, banks, and government offices.
 
 [![Flutter](https://img.shields.io/badge/Flutter-3.22+-blue.svg)](https://flutter.dev)
