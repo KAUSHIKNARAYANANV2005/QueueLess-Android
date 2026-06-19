@@ -1,4 +1,4 @@
-name: Flutter Load Performance Tests
+name: Load Performance Test
 
 on:
   workflow_dispatch:
