@@ -7,6 +7,7 @@ class UserModel {
   final String phone;
   final String role; // 'customer', 'business', 'admin'
   final String? profileImage;
+  final double walletBalance;
   final DateTime createdAt;
 
   UserModel({
@@ -16,6 +17,7 @@ class UserModel {
     required this.phone,
     required this.role,
     this.profileImage,
+    this.walletBalance = 0.0,
     required this.createdAt,
   });
 
@@ -27,6 +29,7 @@ class UserModel {
       phone: json['phone'] ?? '',
       role: json['role'] ?? 'customer',
       profileImage: json['profileImage'],
+      walletBalance: (json['walletBalance'] ?? 0.0).toDouble(),
       createdAt: json['createdAt'] is Timestamp
           ? (json['createdAt'] as Timestamp).toDate()
           : DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
@@ -41,6 +44,7 @@ class UserModel {
       'phone': phone,
       'role': role,
       'profileImage': profileImage,
+      'walletBalance': walletBalance,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }

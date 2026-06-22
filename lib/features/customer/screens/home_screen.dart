@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -27,6 +28,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
   List<BusinessModel> _businesses = [];
   bool _loading = true;
   String? _error;
+  StreamSubscription? _businessesSub;
   late AnimationController _heroCtrl;
   late Animation<double> _heroAnim;
 
@@ -68,21 +70,21 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
 
   @override
   void dispose() {
+    _businessesSub?.cancel();
     _heroCtrl.dispose();
     super.dispose();
   }
 
-  Future<void> _loadBusinesses() async {
+  void _loadBusinesses() {
     setState(() { _loading = true; _error = null; });
-    try {
-      final result = await FirebaseService.instance.getNearbyBusinesses(
-        12.9716, 77.5946,
-        _selectedCategory == 'All' ? null : _selectedCategory,
-      );
-      if (mounted) setState(() { _businesses = result; _loading = false; });
-    } catch (e) {
+    _businessesSub?.cancel();
+    _businessesSub = FirebaseService.instance.getBusinessesStream(
+      _selectedCategory == 'All' ? null : _selectedCategory,
+    ).listen((data) {
+      if (mounted) setState(() { _businesses = data; _loading = false; _error = null; });
+    }, onError: (e) {
       if (mounted) setState(() { _error = e.toString(); _loading = false; });
-    }
+    });
   }
 
   void _onNavTap(int i) {

@@ -62,7 +62,7 @@ class _AppointmentListScreenState extends State<AppointmentListScreen>
     return Scaffold(
       appBar: AppBar(
         title: const Text('Appointments'),
-        leading: IconButton(icon: const Icon(Icons.arrow_back_ios_rounded), onPressed: () => context.pop()),
+        leading: IconButton(icon: const Icon(Icons.arrow_back_ios_rounded), onPressed: () => context.go('/dashboard')),
         actions: [
           IconButton(icon: const Icon(Icons.calendar_today_rounded), onPressed: _pickDate),
           IconButton(icon: const Icon(Icons.download_rounded), onPressed: () {}),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/services/firebase_service.dart';
-import '../../../shared/models/queue_model.dart';
+import '../../../shared/models/booking_model.dart';
 import '../../../shared/models/business_model.dart';
 import '../../../shared/widgets/premium_button.dart';
 import '../../../shared/widgets/animated_card.dart';
@@ -49,7 +49,7 @@ class _BusinessDashboardScreenState extends State<BusinessDashboardScreen> {
       case 0: break;
       case 1: context.go('/queue-manager'); break;
       case 2: context.go('/appointment-list'); break;
-      case 3: context.go('/analytics'); break;
+      case 3: context.go('/services'); break;
       case 4: context.go('/settings'); break;
     }
   }
@@ -119,31 +119,36 @@ class _BusinessDashboardScreenState extends State<BusinessDashboardScreen> {
                     ),
                     const SizedBox(height: 20),
                     // Live queue card
-                    StreamBuilder<QueueModel>(
+                    StreamBuilder<List<BookingModel>>(
                       stream: _businessId != null 
-                        ? FirebaseService.instance.getQueueStream(_businessId!)
+                        ? FirebaseService.instance.getLiveQueueStream(_businessId!)
                         : const Stream.empty(),
                       builder: (ctx, snap) {
-                        final q = snap.data ?? QueueModel(businessId: 'b1', currentServingToken: 'B004', totalWaiting: 7, avgWaitMinutes: 14, items: []);
+                        final list = snap.data ?? [];
+                        final active = list.where((b) => b.status == 'active').firstOrNull;
+                        final waiting = list.where((b) => b.status == 'pending' || b.status == 'confirmed').toList();
+                        final totalWait = waiting.length;
+                        final avgWait = waiting.isNotEmpty ? waiting.first.estimatedWaitMinutes : 0;
+                        
                         return GlassContainer.light(
                           borderRadius: AppRadius.lg,
                           padding: const EdgeInsets.all(16),
                           child: Row(children: [
                             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                               const Text('Now Serving', style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w500)),
-                              Text(q.currentServingToken, style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w900, fontFamily: 'monospace', letterSpacing: -1)),
+                              Text(active?.tokenNumber ?? '--', style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w900, fontFamily: 'monospace', letterSpacing: -1)),
                             ]),
                             const Spacer(),
                             Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                              Text('${q.totalWaiting} in queue', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                              Text('$totalWait in queue', style: const TextStyle(color: Colors.white70, fontSize: 12)),
                               const SizedBox(height: 2),
-                              Text('~${q.avgWaitMinutes} min wait', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13)),
+                              Text('~${avgWait} min wait', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13)),
                             ]),
                             const SizedBox(width: 12),
                             GestureDetector(
                               key: const Key('serve_next_btn_dashboard'),
                               onTap: () {
-                                if (_businessId != null) FirebaseService.instance.serveNext(_businessId!);
+                                if (_businessId != null && active != null) FirebaseService.instance.serveCustomer(_businessId!, active.id);
                               },
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -185,7 +190,7 @@ class _BusinessDashboardScreenState extends State<BusinessDashboardScreen> {
                     const SizedBox(width: 10),
                     Expanded(child: _QuickActionCard(icon: Icons.people_rounded, label: 'Staff', color: AppColors.tealSuccess, onTap: () => context.go('/staff'))),
                     const SizedBox(width: 10),
-                    Expanded(child: _QuickActionCard(icon: Icons.bar_chart_rounded, label: 'Analytics', color: AppColors.amberWarning, onTap: () => context.go('/analytics'))),
+                    Expanded(child: _QuickActionCard(icon: Icons.medical_services_rounded, label: 'Services', color: AppColors.amberWarning, onTap: () => context.go('/services'))),
                     const SizedBox(width: 10),
                     Expanded(child: _QuickActionCard(icon: Icons.settings_rounded, label: 'Settings', color: AppColors.primaryDeep, onTap: () => context.go('/settings'))),
                   ]),

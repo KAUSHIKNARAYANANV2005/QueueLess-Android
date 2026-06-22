@@ -157,6 +157,14 @@ class FirebaseService {
   Future<void> updateUser(String id, Map<String, dynamic> data) =>
       _firestore.collection('users').doc(id).update(data);
 
+  Future<String> uploadUserAvatar(String id, Uint8List fileBytes, String fileName) async {
+    final ref = FirebaseStorage.instance.ref().child('users/$id/avatar_$fileName');
+    await ref.putData(fileBytes);
+    final url = await ref.getDownloadURL();
+    await updateUser(id, {'profileImage': url});
+    return url;
+  }
+
   // ─── BUSINESSES ──────────────────────────────────────────────────────────
 
   Future<List<BusinessModel>> getNearbyBusinesses(
@@ -170,16 +178,28 @@ class FirebaseService {
       final results = snap.docs
           .map((d) => BusinessModel.fromJson({...d.data(), 'id': d.id}))
           .toList();
-      return results.isEmpty ? _mockBusinesses() : results;
-    } catch (e) { return _mockBusinesses(); }
+      return results;
+    } catch (e) { return []; }
+  }
+
+  Stream<List<BusinessModel>> getBusinessesStream(String? category) {
+    Query<Map<String, dynamic>> query = _firestore.collection('businesses');
+    if (category != null && category.isNotEmpty && category != 'All') {
+      query = query.where('category', isEqualTo: category);
+    }
+    query = query.orderBy('createdAt', descending: true);
+    
+    return query.snapshots().map((snap) => snap.docs
+        .map((d) => BusinessModel.fromJson({...d.data(), 'id': d.id}))
+        .toList())
+        .handleError((_) => <BusinessModel>[]);
   }
 
   Future<BusinessModel?> getBusinessById(String id) async {
     try {
       final doc = await _firestore.collection('businesses').doc(id).get();
       if (!doc.exists) {
-        return _mockBusinesses().firstWhere((b) => b.id == id,
-            orElse: () => _mockBusinesses().first);
+        return null;
       }
       return BusinessModel.fromJson({...doc.data()!, 'id': doc.id});
     } catch (e) { return null; }
@@ -222,9 +242,7 @@ class FirebaseService {
           .map((d) => BusinessModel.fromJson({...d.data(), 'id': d.id}))
           .toList();
     } catch (e) {
-      return _mockBusinesses()
-          .where((b) => b.name.toLowerCase().contains(query.toLowerCase()))
-          .toList();
+      return [];
     }
   }
 
@@ -235,9 +253,17 @@ class FirebaseService {
       final snap = await _firestore.collection('businesses')
           .doc(businessId).collection('services')
           .where('isActive', isEqualTo: true).get();
-      if (snap.docs.isEmpty) return _mockServices();
       return snap.docs.map((d) => {'id': d.id, ...d.data()}).toList();
-    } catch (e) { return _mockServices(); }
+    } catch (e) { return []; }
+  }
+
+  Stream<List<Map<String, dynamic>>> getServicesStream(String businessId) {
+    return _firestore.collection('businesses')
+        .doc(businessId).collection('services')
+        .where('isActive', isEqualTo: true)
+        .snapshots()
+        .map((snap) => snap.docs.map((d) => {'id': d.id, ...d.data()}).toList())
+        .handleError((_) => <Map<String, dynamic>>[]);
   }
 
   Future<String> createService(String businessId, Map<String, dynamic> data) async {
@@ -265,9 +291,8 @@ class FirebaseService {
     try {
       final snap = await _firestore.collection('businesses')
           .doc(businessId).collection('staff').get();
-      if (snap.docs.isEmpty) return _mockStaff();
       return snap.docs.map((d) => {'id': d.id, ...d.data()}).toList();
-    } catch (e) { return _mockStaff(); }
+    } catch (e) { return []; }
   }
 
   Future<void> addStaff(String businessId, Map<String, dynamic> data) async {
@@ -351,7 +376,7 @@ class FirebaseService {
         .update({'status': status, 'updatedAt': FieldValue.serverTimestamp()});
   }
 
-  Future<void> cancelBooking(String bookingId) => updateBookingStatus(bookingId, 'cancelled');
+// cancelBooking is redefined below in the queue section
 
   Future<void> rescheduleBooking(String bookingId, DateTime newDateTime) async {
     await _firestore.collection('bookings').doc(bookingId).update({
@@ -363,95 +388,73 @@ class FirebaseService {
 
   // ─── QUEUE ───────────────────────────────────────────────────────────────
 
-  Stream<QueueModel> getQueueStream(String businessId) {
-    return _firestore.collection('queues').doc(businessId).snapshots().map((snap) {
-      if (!snap.exists) {
-        return QueueModel(businessId: businessId, currentServingToken: '-',
-            totalWaiting: 0, avgWaitMinutes: 0, items: []);
+  Stream<List<BookingModel>> getLiveQueueStream(String businessId) {
+    return _firestore.collection('bookings')
+        .where('businessId', isEqualTo: businessId)
+        .where('status', whereIn: ['pending', 'confirmed', 'active'])
+        .snapshots()
+        .map((s) {
+      final list = s.docs.map((d) => BookingModel.fromJson({...d.data(), 'id': d.id})).toList();
+      list.sort((a, b) => a.queuePosition.compareTo(b.queuePosition));
+      return list;
+    }).handleError((_) => <BookingModel>[]);
+  }
+
+  Future<void> _recalculateQueue(Transaction tx, String businessId) async {
+    final snap = await _firestore.collection('bookings')
+        .where('businessId', isEqualTo: businessId)
+        .where('status', whereIn: ['pending', 'confirmed', 'active'])
+        .get();
+        
+    final list = snap.docs.map((d) => BookingModel.fromJson({...d.data(), 'id': d.id})).toList();
+    list.sort((a, b) => a.queuePosition.compareTo(b.queuePosition));
+    
+    int newPos = 1;
+    for (var b in list) {
+      if (b.status == 'active') {
+        newPos++;
+        continue;
       }
-      return QueueModel.fromJson({...snap.data()!, 'businessId': businessId});
-    });
+      final ref = _firestore.collection('bookings').doc(b.id);
+      tx.update(ref, {
+        'queuePosition': newPos,
+        'waitMinutes': newPos * 15, // Simplified 15 mins per slot
+      });
+      newPos++;
+    }
   }
 
-  Future<void> addToQueue(String businessId, String bookingId,
-      String customerName, String serviceName) async {
-    final ref = _firestore.collection('queues').doc(businessId);
-    await _firestore.runTransaction((tx) async {
-      final snap = await tx.get(ref);
-      final currentItems =
-          snap.exists ? (snap.data()!['items'] as List<dynamic>?) ?? [] : [];
-      final position = currentItems.length + 1;
-      final newItem = QueueItem(
-        bookingId: bookingId, customerName: customerName,
-        serviceName: serviceName, position: position,
-        status: 'waiting', waitMinutes: position * 8,
-      ).toJson();
-      tx.set(ref, {
-        'businessId': businessId,
-        'totalWaiting': position,
-        'avgWaitMinutes': 8,
-        'currentServingToken': snap.exists
-            ? (snap.data()!['currentServingToken'] ?? '-') : '-',
-        'items': [...currentItems, newItem],
-      }, SetOptions(merge: true));
-    });
-  }
-
-  Future<void> serveNext(String businessId) async {
-    final ref = _firestore.collection('queues').doc(businessId);
+  Future<void> cancelBooking(String bookingId) async {
+    final ref = _firestore.collection('bookings').doc(bookingId);
     await _firestore.runTransaction((tx) async {
       final snap = await tx.get(ref);
       if (!snap.exists) return;
-      final items = List<Map<String, dynamic>>.from(snap.data()!['items'] ?? []);
-      if (items.isEmpty) return;
-      final serving = items.removeAt(0);
+      final bizId = snap.data()?['businessId'];
+      tx.update(ref, {'status': 'cancelled', 'updatedAt': FieldValue.serverTimestamp()});
+      if (bizId != null) await _recalculateQueue(tx, bizId as String);
+    });
+  }
 
-      // Recalculate remaining items
-      for (int i = 0; i < items.length; i++) {
-        items[i]['position'] = i + 1;
-        items[i]['waitMinutes'] = (i + 1) * 8;
-      }
+  Future<void> activateCustomer(String businessId, String bookingId) async {
+    final ref = _firestore.collection('bookings').doc(bookingId);
+    await _firestore.runTransaction((tx) async {
+      tx.update(ref, {'status': 'active', 'updatedAt': FieldValue.serverTimestamp()});
+    });
+  }
 
-      final rawId = serving['bookingId'] ?? '';
-      String token = rawId.length > 4 ? rawId.substring(rawId.length - 4).toUpperCase() : rawId.toUpperCase();
-      if (!token.startsWith('B') && !token.startsWith('W')) {
-        token = 'T-$token';
-      }
-
-      tx.update(ref, {
-        'currentServingToken': token.isEmpty ? '-' : token,
-        'currentServingName': serving['customerName'] ?? 'Walk-in',
-        'currentServingService': serving['serviceName'] ?? 'General',
-        'totalWaiting': items.length,
-        'items': items,
-        'lastUpdated': FieldValue.serverTimestamp(),
-      });
+  Future<void> serveCustomer(String businessId, String bookingId) async {
+    final ref = _firestore.collection('bookings').doc(bookingId);
+    await _firestore.runTransaction((tx) async {
+      tx.update(ref, {'status': 'served', 'updatedAt': FieldValue.serverTimestamp()});
+      await _recalculateQueue(tx, businessId);
     });
   }
 
   Future<void> skipCustomer(String businessId, String bookingId) async {
-    final ref = _firestore.collection('queues').doc(businessId);
+    final ref = _firestore.collection('bookings').doc(bookingId);
     await _firestore.runTransaction((tx) async {
-      final snap = await tx.get(ref);
-      if (!snap.exists) return;
-      final items = List<Map<String, dynamic>>.from(snap.data()!['items'] ?? []);
-      final idx = items.indexWhere((e) => e['bookingId'] == bookingId);
-      if (idx >= 0) {
-        final item = items.removeAt(idx);
-        item['status'] = 'skipped';
-        items.add(item);
-
-        // Recalculate positions
-        for (int i = 0; i < items.length; i++) {
-          items[i]['position'] = i + 1;
-          items[i]['waitMinutes'] = (i + 1) * 8;
-        }
-      }
-      tx.update(ref, {
-        'totalWaiting': items.length,
-        'items': items,
-        'lastUpdated': FieldValue.serverTimestamp(),
-      });
+      tx.update(ref, {'status': 'cancelled', 'updatedAt': FieldValue.serverTimestamp()});
+      await _recalculateQueue(tx, businessId);
     });
   }
 
@@ -514,7 +517,7 @@ class FirebaseService {
           .where('userId', isEqualTo: userId)
           .orderBy('createdAt', descending: true).limit(50).get();
       return snap.docs.map((d) => {'id': d.id, ...d.data()}).toList();
-    } catch (e) { return _mockNotifications(); }
+    } catch (e) { return []; }
   }
 
   Future<void> markNotificationRead(String notificationId) async {
@@ -624,7 +627,7 @@ class FirebaseService {
           .where('userId', isEqualTo: userId)
           .orderBy('createdAt', descending: true).get();
       return snap.docs.map((d) => {'id': d.id, ...d.data()}).toList();
-    } catch (e) { return _mockTransactions(); }
+    } catch (e) { return []; }
   }
 
   // ─── ANALYTICS ───────────────────────────────────────────────────────────
@@ -671,62 +674,5 @@ class FirebaseService {
     return await task.ref.getDownloadURL();
   }
 
-  // ─── MOCK DATA ────────────────────────────────────────────────────────────
-
-  List<BusinessModel> _mockBusinesses() => [
-        BusinessModel(id: 'b1', name: 'Dr. Sharma Clinic', category: 'Clinic',
-            description: 'General medicine and specialist care',
-            address: 'Koramangala, Bengaluru', lat: 12.9352, lng: 77.6245,
-            phone: '+91 98765 43210', rating: 4.8, reviewCount: 234,
-            isVerified: true, plan: 'pro', ownerId: ''),
-        BusinessModel(id: 'b2', name: 'Lakme Salon', category: 'Salon',
-            description: 'Premium hair and beauty services',
-            address: 'Indiranagar, Bengaluru', lat: 12.9784, lng: 77.6408,
-            phone: '+91 98765 43211', rating: 4.6, reviewCount: 189,
-            isVerified: true, plan: 'pro', ownerId: ''),
-        BusinessModel(id: 'b3', name: 'RTO Office', category: 'Government',
-            description: 'Vehicle registration and license services',
-            address: 'Silk Board, Bengaluru', lat: 12.9185, lng: 77.6217,
-            phone: '+91 80 2222 3333', rating: 3.9, reviewCount: 89,
-            isVerified: true, plan: 'enterprise', ownerId: ''),
-        BusinessModel(id: 'b4', name: 'SBI Bank', category: 'Bank',
-            description: 'Banking and financial services',
-            address: 'MG Road, Bengaluru', lat: 12.9716, lng: 77.5946,
-            phone: '+91 80 2551 1234', rating: 4.1, reviewCount: 312,
-            isVerified: true, plan: 'pro', ownerId: ''),
-        BusinessModel(id: 'b5', name: 'Tattva Spa', category: 'Spa',
-            description: 'Relaxation and wellness treatments',
-            address: 'Whitefield, Bengaluru', lat: 12.9698, lng: 77.7500,
-            phone: '+91 98765 55555', rating: 4.9, reviewCount: 421,
-            isVerified: true, plan: 'pro', ownerId: ''),
-      ];
-
-  List<Map<String, dynamic>> _mockServices() => [
-        {'id': 's1', 'name': 'General Consultation', 'duration': 15, 'price': 500.0, 'isActive': true},
-        {'id': 's2', 'name': 'Full Checkup', 'duration': 45, 'price': 1500.0, 'isActive': true},
-        {'id': 's3', 'name': 'Blood Test', 'duration': 10, 'price': 300.0, 'isActive': true},
-      ];
-
-  List<Map<String, dynamic>> _mockStaff() => [
-        {'id': 'st1', 'name': 'Dr. Anita Sharma', 'role': 'Doctor', 'isActive': true,
-         'avatar': '', 'phone': '+91 98765 11111'},
-        {'id': 'st2', 'name': 'Nurse Meena', 'role': 'Nurse', 'isActive': true,
-         'avatar': '', 'phone': '+91 98765 22222'},
-      ];
-
-  List<Map<String, dynamic>> _mockNotifications() => [
-        {'id': 'n1', 'title': 'Booking Confirmed', 'body': 'Your appointment at Dr. Sharma is confirmed.',
-         'type': 'booking', 'isRead': false, 'createdAt': Timestamp.now()},
-        {'id': 'n2', 'title': 'Queue Update', 'body': 'You are now #3 in the queue.',
-         'type': 'queue', 'isRead': true, 'createdAt': Timestamp.now()},
-      ];
-
-  List<Map<String, dynamic>> _mockTransactions() => [
-        {'id': 't1', 'title': 'Dr. Sharma Clinic', 'amount': -500.0, 'type': 'debit',
-         'date': 'Today, 10:30 AM', 'status': 'success'},
-        {'id': 't2', 'title': 'Wallet Top-up', 'amount': 1000.0, 'type': 'credit',
-         'date': 'Yesterday, 3:00 PM', 'status': 'success'},
-        {'id': 't3', 'title': 'Lakme Salon', 'amount': -800.0, 'type': 'debit',
-         'date': 'Dec 10, 2:00 PM', 'status': 'success'},
-      ];
+  // ─── MOCK DATA REMOVED ────────────────────────────────────────────────────
 }

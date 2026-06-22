@@ -9,6 +9,7 @@ class BookingModel {
   final String serviceId;
   final String serviceName;
   final String? staffId;
+  final String? staffName;
   final DateTime dateTime;
   final String status; // 'pending','confirmed','active','served','cancelled'
   final int queuePosition;
@@ -27,6 +28,7 @@ class BookingModel {
     required this.serviceId,
     required this.serviceName,
     this.staffId,
+    this.staffName,
     required this.dateTime,
     required this.status,
     required this.queuePosition,
@@ -47,6 +49,7 @@ class BookingModel {
       serviceId: json['serviceId'] ?? '',
       serviceName: json['serviceName'] ?? '',
       staffId: json['staffId'],
+      staffName: json['staffName'],
       dateTime: json['dateTime'] is Timestamp
           ? (json['dateTime'] as Timestamp).toDate()
           : DateTime.tryParse(json['dateTime'] ?? '') ?? DateTime.now(),
@@ -74,6 +77,7 @@ class BookingModel {
       'serviceId': serviceId,
       'serviceName': serviceName,
       'staffId': staffId,
+      'staffName': staffName,
       'dateTime': Timestamp.fromDate(dateTime),
       'status': status,
       'queuePosition': queuePosition,

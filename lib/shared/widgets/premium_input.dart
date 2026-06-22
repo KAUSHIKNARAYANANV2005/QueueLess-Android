@@ -15,6 +15,7 @@ class PremiumInput extends StatefulWidget {
   final void Function(String)? onChanged;
   final void Function(String)? onSubmitted;
   final bool enabled;
+  final bool readOnly;
   final int maxLines;
   final FocusNode? focusNode;
   final String? errorText;
@@ -34,6 +35,7 @@ class PremiumInput extends StatefulWidget {
     this.onChanged,
     this.onSubmitted,
     this.enabled = true,
+    this.readOnly = false,
     this.maxLines = 1,
     this.focusNode,
     this.errorText,
@@ -119,6 +121,7 @@ class _PremiumInputState extends State<PremiumInput>
             onChanged: widget.onChanged,
             onFieldSubmitted: widget.onSubmitted,
             enabled: widget.enabled,
+            readOnly: widget.readOnly,
             maxLines: widget.obscureText ? 1 : widget.maxLines,
             style: AppTextStyles.body.copyWith(color: AppColors.textPrimary),
             decoration: InputDecoration(

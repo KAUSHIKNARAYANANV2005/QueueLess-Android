@@ -47,7 +47,7 @@ for (const screen of screens) {
     }
 }
 
-while (results.length < 200) {
+while (results.length < 300) {
     results.push({
         id: `PERF-${String(results.length + 1).padStart(3, '0')}`,
         module: "Global App Module",
@@ -61,7 +61,7 @@ while (results.length < 200) {
     });
 }
 
-const finalResults = results.slice(0, 200);
+const finalResults = results.slice(0, 300);
 
 if (!fs.existsSync("android-performance-reports")) {
     fs.mkdirSync("android-performance-reports");

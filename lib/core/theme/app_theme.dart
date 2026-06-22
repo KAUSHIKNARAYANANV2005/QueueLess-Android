@@ -6,21 +6,22 @@ import 'package:flutter/material.dart';
 class AppColors {
   // Primary palette
   static const Color primary      = Color(0xFF6C63FF);
-  static const Color primaryDeep  = Color(0xFF4B44CC);
+  static const Color primaryDeep  = Color(0xFF4E44E7);
   static const Color primaryLight = Color(0xFFA89CFF);
   static const Color primaryGlow  = Color(0x336C63FF);
 
   // Accent
-  static const Color teal         = Color(0xFF00D4AA);
+  static const Color teal         = Color(0xFF00E6B4);
   static const Color tealLight    = Color(0xFF33DDBB);
-  static const Color coral        = Color(0xFFFF6B6B);
-  static const Color amber        = Color(0xFFFFB830);
+  static const Color coral        = Color(0xFFEF5350);
+  static const Color amber        = Color(0xFFFFC107);
+  static const Color success      = Color(0xFF4CAF50);
   static const Color info         = Color(0xFF00A3FF);
 
-  // Semantic aliases (keep old names for backward compat)
-  static const Color tealSuccess  = Color(0xFF00D4AA);
-  static const Color coralError   = Color(0xFFFF6B6B);
-  static const Color amberWarning = Color(0xFFFFB830);
+  // Semantic aliases
+  static const Color tealSuccess  = Color(0xFF00E6B4);
+  static const Color coralError   = Color(0xFFEF5350);
+  static const Color amberWarning = Color(0xFFFFC107);
 
   // Backgrounds — light
   static const Color bg           = Color(0xFFF8F7FF);
@@ -31,10 +32,10 @@ class AppColors {
   static const Color inputBg      = Color(0xFFF0EFF8);
 
   // Backgrounds — dark
-  static const Color bgDark       = Color(0xFF0F0E1A);
-  static const Color darkBg       = Color(0xFF1A1830);
-  static const Color cardDark     = Color(0xFF1E1C2E);
-  static const Color darkCard     = Color(0xFF252340);
+  static const Color bgDark       = Color(0xFF0A0915);
+  static const Color darkBg       = Color(0xFF030206);
+  static const Color cardDark     = Color(0xFF0F0C1E);
+  static const Color darkCard     = Color(0xFF0F0C1E);
   static const Color surfaceDark  = Color(0xFF252340);
 
   // Text — light
@@ -51,10 +52,11 @@ class AppColors {
   static const Color divider   = Color(0xFFEEECF8);
   static const Color overlay   = Color(0x80000000);
 
-  // Glass surface helpers (non-const — computed)
-  static Color glassLight  = Colors.white.withValues(alpha: 0.15);
-  static Color glassBorder = Colors.white.withValues(alpha: 0.25);
-  static Color glassDark   = const Color(0xFF1A1830).withValues(alpha: 0.6);
+  // Glass surface helpers
+  static Color glassLight  = Colors.white.withValues(alpha: 0.45);
+  static Color glassBorderLight = Colors.white.withValues(alpha: 0.35);
+  static Color glassDark   = const Color(0xFF0F0C1E).withValues(alpha: 0.45);
+  static Color glassBorderDark = Colors.white.withValues(alpha: 0.07);
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -62,49 +64,61 @@ class AppColors {
 // ─────────────────────────────────────────────────────────────
 class AppGradients {
   static const LinearGradient primary = LinearGradient(
-    colors: [Color(0xFF6C63FF), Color(0xFF4B44CC)],
+    colors: [Color(0xFF6C63FF), Color(0xFF4E44E7)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
   static const LinearGradient primaryAngled = LinearGradient(
-    colors: [Color(0xFF6C63FF), Color(0xFF4B44CC)],
+    colors: [Color(0xFF6C63FF), Color(0xFF4E44E7)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     transform: GradientRotation(135 * 3.14159 / 180),
   );
   static const LinearGradient teal = LinearGradient(
-    colors: [Color(0xFF00D4AA), Color(0xFF00A3FF)],
+    colors: [Color(0xFF00E6B4), Color(0xFF00A3FF)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
   static const LinearGradient warm = LinearGradient(
-    colors: [Color(0xFFFFB830), Color(0xFFFF6B6B)],
+    colors: [Color(0xFFFFC107), Color(0xFFEF5350)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
   static const LinearGradient dark = LinearGradient(
-    colors: [Color(0xFF1A1830), Color(0xFF252340)],
+    colors: [Color(0xFF0A0915), Color(0xFF030206)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
   static const LinearGradient headerPurple = LinearGradient(
-    colors: [Color(0xFF6C63FF), Color(0xFF4B44CC)],
+    colors: [Color(0xFF6C63FF), Color(0xFF4E44E7)],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );
   // New Phase 2 gradients
   static const LinearGradient aurora = LinearGradient(
-    colors: [Color(0xFF6C63FF), Color(0xFF00D4AA), Color(0xFF00A3FF)],
+    colors: [Color(0xFF6C63FF), Color(0xFF00E6B4), Color(0xFF00A3FF)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
   static const LinearGradient deepNight = LinearGradient(
-    colors: [Color(0xFF0F0E1A), Color(0xFF1E1C2E), Color(0xFF252340)],
+    colors: [Color(0xFF0A0915), Color(0xFF0F0C1E), Color(0xFF030206)],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );
   static const LinearGradient coralSunset = LinearGradient(
-    colors: [Color(0xFFFF6B6B), Color(0xFFFFB830)],
+    colors: [Color(0xFFEF5350), Color(0xFFFFC107)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+  
+  // App Background Gradients
+  static const LinearGradient bgLight = LinearGradient(
+    colors: [Color(0xFFF8F7FF), Color(0xFFEFEFFF)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+  static const LinearGradient bgDark = LinearGradient(
+    colors: [Color(0xFF0A0915), Color(0xFF030206)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
@@ -132,7 +146,7 @@ class AppShadows {
   ];
   // Glass morphism shadow
   static const List<BoxShadow> glass = [
-    BoxShadow(color: Color(0x1A6C63FF), blurRadius: 24, spreadRadius: -4, offset: Offset(0, 8)),
+    BoxShadow(color: Color(0x0F6C63FF), blurRadius: 32, offset: Offset(0, 8)),
   ];
   // Colored glow effects
   static List<BoxShadow> glow(Color color, {double intensity = 0.3}) => [

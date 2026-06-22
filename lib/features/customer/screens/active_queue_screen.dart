@@ -1,8 +1,9 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/services/firebase_service.dart';
-import '../../../shared/models/queue_model.dart';
+import '../../../shared/models/booking_model.dart';
 import '../../../shared/widgets/premium_button.dart';
 import '../../../shared/widgets/glass_container.dart';
 import '../../../shared/widgets/animated_card.dart';
@@ -63,23 +64,21 @@ class ActiveQueueScreen extends StatelessWidget {
 
             // ── Live queue stream ────────────────────────
             Expanded(
-              child: StreamBuilder<QueueModel>(
-                stream: FirebaseService.instance.getQueueStream(businessId),
+              child: StreamBuilder<List<BookingModel>>(
+                stream: FirebaseService.instance.getLiveQueueStream(businessId),
                 builder: (ctx, snap) {
                   if (snap.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator(color: Colors.white));
                   }
-                  final queue = snap.data ?? QueueModel(
-                    businessId: businessId,
-                    currentServingToken: '-',
-                    totalWaiting: 0,
-                    avgWaitMinutes: 0,
-                    items: [],
-                  );
-                  final myItem = queue.items.where((i) => i.bookingId == bookingId).firstOrNull;
-                  final myPosition = myItem?.position ?? queue.totalWaiting + 1;
-                  final myWait = myItem?.waitMinutes ?? queue.avgWaitMinutes;
-                  final isMyTurn = myPosition <= 1;
+                  
+                  final list = snap.data ?? [];
+                  final myItem = list.where((i) => i.id == bookingId).firstOrNull;
+                  final active = list.where((i) => i.status == 'active').firstOrNull;
+                  
+                  final totalWaiting = list.where((b) => b.status == 'pending' || b.status == 'confirmed').length;
+                  final myPosition = myItem?.queuePosition ?? totalWaiting + 1;
+                  final myWait = myItem?.estimatedWaitMinutes ?? (totalWaiting * 15);
+                  final isMyTurn = myPosition <= 1 && myItem?.status == 'active';
 
                   return SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
@@ -103,51 +102,42 @@ class ActiveQueueScreen extends StatelessWidget {
                       QueuePositionWidget(queueNumber: myPosition),
                       const SizedBox(height: 12),
 
-                      // ── Wait time ────────────────────────────
-                      GlassContainer.light(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                        borderRadius: AppRadius.full,
-                        child: Row(mainAxisSize: MainAxisSize.min, children: [
-                          const Icon(Icons.access_time_rounded, color: Colors.white70, size: 16),
-                          const SizedBox(width: 6),
-                          Text('~$myWait min estimated wait',
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14)),
+                      // ── Bottom status bar ────────────────────
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24), boxShadow: AppShadows.e1),
+                        child: Row(children: [
+                          Expanded(
+                            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                              const Text('Live Status', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+                              if (active != null)
+                                Text('Serving ${active.tokenNumber.isNotEmpty ? active.tokenNumber : '#B000'}',
+                                  style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700, fontSize: 16)),
+                            ]),
+                          ),
                         ]),
                       ),
                       const SizedBox(height: 20),
 
-                      // ── Now serving + people ahead ───────────
-                      if (queue.currentServingToken != '-')
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                            Container(
-                              width: 8, height: 8,
-                              decoration: const BoxDecoration(color: AppColors.teal, shape: BoxShape.circle),
-                            ),
-                            const SizedBox(width: 6),
-                            Text('Now serving: ${queue.currentServingToken}',
-                              style: const TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w500)),
-                          ]),
-                        ),
-
                       // ── Stacked avatars of people ahead ──────
                       Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                         ...List.generate(
-                          queue.totalWaiting > 4 ? 4 : queue.totalWaiting,
-                          (i) => Container(
-                            width: 34, height: 34,
-                            margin: EdgeInsets.only(right: i < 3 ? -10 : 0),
-                            decoration: BoxDecoration(
-                              gradient: [AppGradients.primary, AppGradients.teal, AppGradients.warm, AppGradients.aurora][i % 4],
-                              shape: BoxShape.circle,
-                              border: const Border.fromBorderSide(BorderSide(color: Colors.white, width: 2)),
+                          totalWaiting > 4 ? 4 : totalWaiting,
+                          (i) => Align(
+                            widthFactor: i == (math.min(totalWaiting, 4) - 1) ? 1.0 : 0.7,
+                            child: Container(
+                              width: 34, height: 34,
+                              decoration: BoxDecoration(
+                                gradient: [AppGradients.primary, AppGradients.teal, AppGradients.warm, AppGradients.aurora][i % 4],
+                                shape: BoxShape.circle,
+                                border: const Border.fromBorderSide(BorderSide(color: Colors.white, width: 2)),
+                              ),
+                              child: const Icon(Icons.person_rounded, color: Colors.white, size: 16),
                             ),
-                            child: const Icon(Icons.person_rounded, color: Colors.white, size: 16),
                           ),
                         ),
                         const SizedBox(width: 14),
-                        Text('${queue.totalWaiting} in queue',
+                        Text('$totalWaiting in queue',
                           style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14)),
                       ]),
                       const SizedBox(height: 20),
@@ -156,18 +146,24 @@ class ActiveQueueScreen extends StatelessWidget {
                       if (isMyTurn)
                         TweenAnimationBuilder<double>(
                           tween: Tween(begin: 0.95, end: 1.05),
-                          duration: const Duration(milliseconds: 800),
+                          duration: const Duration(seconds: 1),
                           curve: Curves.easeInOut,
-                          builder: (_, v, child) => Transform.scale(scale: v, child: child),
-                          child: GlassContainer.light(
-                            padding: const EdgeInsets.all(16),
-                            borderRadius: AppRadius.lg,
-                            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                              const Icon(Icons.celebration_rounded, color: Colors.white, size: 22),
-                              const SizedBox(width: 10),
-                              Text("It's your turn! 🎉",
-                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 16)),
-                            ]),
+                          builder: (context, val, child) => Transform.scale(
+                            scale: val,
+                            child: Container(
+                              margin: const EdgeInsets.only(bottom: 24),
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(gradient: AppGradients.aurora, borderRadius: BorderRadius.circular(20), boxShadow: AppShadows.e3),
+                              child: Column(children: [
+                                const Icon(Icons.stars_rounded, color: Colors.white, size: 48),
+                                const SizedBox(height: 12),
+                                const Text("It's your turn!", style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800)),
+                                const SizedBox(height: 6),
+                                if (active != null)
+                                  const Text('Please proceed to the counter or doctor’s room.',
+                                    style: TextStyle(color: Colors.white, fontSize: 14), textAlign: TextAlign.center),
+                              ]),
+                            ),
                           ),
                         ),
 
@@ -188,14 +184,14 @@ class ActiveQueueScreen extends StatelessWidget {
                             const SizedBox(height: 2),
                             Text('$serviceName · Token $tokenNumber', style: AppTextStyles.caption),
                           ])),
-                          if (queue.currentServingToken != '-')
+                          if (active != null)
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
                                 color: AppColors.primary.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(AppRadius.full),
                               ),
-                              child: Text('Serving ${queue.currentServingToken}',
+                              child: Text('Serving ${active.tokenNumber.isNotEmpty ? active.tokenNumber : '#B000'}',
                                 style: const TextStyle(color: AppColors.primary, fontSize: 11, fontWeight: FontWeight.w700)),
                             ),
                         ]),

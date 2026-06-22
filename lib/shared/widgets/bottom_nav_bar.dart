@@ -108,7 +108,7 @@ class BottomNavBar extends StatelessWidget {
         {'icon': Icons.dashboard_outlined, 'activeIcon': Icons.dashboard_rounded, 'label': 'Dashboard'},
         {'icon': Icons.queue_outlined, 'activeIcon': Icons.queue_rounded, 'label': 'Queue'},
         {'icon': Icons.calendar_month_outlined, 'activeIcon': Icons.calendar_month_rounded, 'label': 'Bookings'},
-        {'icon': Icons.bar_chart_outlined, 'activeIcon': Icons.bar_chart_rounded, 'label': 'Analytics'},
+        {'icon': Icons.medical_services_outlined, 'activeIcon': Icons.medical_services_rounded, 'label': 'Services'},
         {'icon': Icons.settings_outlined, 'activeIcon': Icons.settings_rounded, 'label': 'Settings'},
       ];
 }

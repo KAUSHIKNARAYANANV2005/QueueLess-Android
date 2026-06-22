@@ -74,14 +74,6 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
 
       final bookingId = await FirebaseService.instance.createBooking(booking);
 
-      // Add to real-time queue
-      await FirebaseService.instance.addToQueue(
-        businessId,
-        bookingId,
-        user.displayName ?? user.email ?? 'Customer',
-        serviceName,
-      );
-
       if (mounted) {
         context.go('/queue', extra: {
           'businessId': businessId,
